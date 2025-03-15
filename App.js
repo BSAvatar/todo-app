@@ -1,93 +1,107 @@
-import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, FlatList, Text, View, TextInput, Button } from 'react-native';
-import { CheckBox } from '@rneui/themed';
+import React, { useState } from "react";
+import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { CheckBox } from "react-native-elements";
 
 export default function App() {
-  const [tasks, setTasks] = useState([
-    { key: '1', description: 'Buy groceries', completed: false },
-    { key: '2', description: 'Walk the dog', completed: false },
-  ]);
-  
-  const [newTask, setNewTask] = useState('');
-
-  const toggleTaskCompletion = (taskKey) => {
-    setTasks(tasks.map(task => 
-      task.key === taskKey ? { ...task, completed: !task.completed } : task
-    ));
-  };
+  const [task, setTask] = useState("");
+  const [tasks, setTasks] = useState([]);
 
   const addTask = () => {
-    if (newTask.trim() !== '') {
-      const newTaskObject = {
-        key: (tasks.length + 1).toString(),
-        description: newTask,
-        completed: false,
-      };
-      setTasks([...tasks, newTaskObject]);
-      setNewTask('');
-    }
+    if (task.trim().length === 0) return;
+    setTasks([...tasks, { id: Date.now().toString(), text: task, completed: false }]);
+    setTask("");
+  };
+
+  const toggleTaskCompletion = (id) => {
+    setTasks(
+      tasks.map((t) =>
+        t.id === id ? { ...t, completed: !t.completed } : t
+      )
+    );
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.taskContainer}>
       <CheckBox
         checked={item.completed}
-        onPress={() => toggleTaskCompletion(item.key)}
+        onPress={() => toggleTaskCompletion(item.id)}
       />
-      <Text style={[styles.taskText, item.completed && styles.completedTask]}>
-        {item.description}
+      <Text style={[styles.taskText, item.completed && styles.completedText]}>
+        {item.text}
       </Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList data={tasks} renderItem={renderItem} />
+    <View style={styles.container}>
+      <Text style={styles.heading}>To-Do List</Text>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          value={newTask}
-          onChangeText={setNewTask}
-          placeholder="Add a new task"
+          placeholder="Enter task"
+          value={task}
+          onChangeText={setTask}
         />
-        <Button title="Add" onPress={addTask} />
+        <TouchableOpacity style={styles.addButton} onPress={addTask}>
+          <Text style={styles.addButtonText}>Add</Text>
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Platform.OS === 'android' ? 25 : 0,
-    paddingHorizontal: 20,
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  taskContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  taskText: {
-    fontSize: 18,
-    marginLeft: 10,
-  },
-  completedTask: {
-    textDecorationLine: 'line-through',
-    textDecorationStyle: 'solid',
-    color: 'gray',
+  heading: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
   },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: "#ccc",
     padding: 10,
-    marginRight: 10,
     borderRadius: 5,
+  },
+  addButton: {
+    backgroundColor: "#007BFF",
+    padding: 10,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  addButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  taskContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  taskText: {
+    flex: 1,
+    fontSize: 16,
+  },
+  completedText: {
+    textDecorationLine: "line-through",
+    color: "gray",
   },
 });
